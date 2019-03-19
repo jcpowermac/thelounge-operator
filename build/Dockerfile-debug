@@ -1,0 +1,34 @@
+FROM registry.centos.org/centos:7
+
+ENV OPERATOR=/usr/local/bin/thelounge-operator \
+    USER_UID=1001 \
+    USER_NAME=thelounge-operator \
+    DEBUG=true \
+    GOROOT=/usr/local/go \
+    GOPATH=/go 
+    
+ENV PATH=$PATH:$GOPATH/bin:$GOROOT/bin
+
+RUN yum -y install git && \
+    curl -o go1.11.6.tar.gz https://dl.google.com/go/go1.11.6.linux-amd64.tar.gz && \
+    tar -xf go1.11.6.tar.gz && \
+    mv go /usr/local && \
+    mkdir ${GOPATH} && \
+    chown -R ${USER_UID}:0 ${GOPATH} 
+
+# install operator binary
+COPY build/_output/bin/thelounge-operator-debug ${OPERATOR}
+
+COPY build/bin /usr/local/bin
+RUN /usr/local/bin/user_setup
+
+ENTRYPOINT ["/usr/local/bin/entrypoint"]
+
+EXPOSE 40000
+
+RUN go get github.com/jcpowermac/thelounge-operator
+RUN go get -u github.com/go-delve/delve/cmd/dlv
+
+RUN setcap cap_sys_ptrace=eip /usr/local/bin/dlv
+RUN setcap cap_sys_ptrace=eip ${GOPATH}/bin/dlv
+USER ${USER_UID}

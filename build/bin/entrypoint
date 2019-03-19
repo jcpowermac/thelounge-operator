@@ -9,4 +9,10 @@ if ! whoami &>/dev/null; then
   fi
 fi
 
-exec ${OPERATOR} $@
+if [ "$DEBUG" = true ] ; then
+    echo "*** DEBUG MODE ***"
+    exec /usr/local/bin/dlv --listen=:40000 --headless=true --api-version=2 exec ${OPERATOR} $@
+else
+    echo "*** PROD MODE ***"
+    exec ${OPERATOR} $@
+fi

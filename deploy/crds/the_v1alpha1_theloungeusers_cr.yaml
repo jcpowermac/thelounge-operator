@@ -1,0 +1,7 @@
+apiVersion: the.lounge.chat/v1alpha1
+kind: TheloungeUsers
+metadata:
+  name: example-theloungeusers
+spec:
+  # Add fields here
+  size: 3
